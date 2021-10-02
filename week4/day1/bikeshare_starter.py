@@ -6,6 +6,9 @@ CITY_DATA = { 'chicago': 'chicago.csv',
               'new york city': 'new_york_city.csv',
               'washington': 'washington.csv' }
 
+MONTHS = ("all", "january", "february", "march", "april", "may" , "june")
+DAYS = ("all", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+
 def get_filters():
     """
     Asks user to specify a city, month, and day to analyze.
@@ -16,13 +19,26 @@ def get_filters():
         (str) day - name of the day of week to filter by, or "all" to apply no day filter
     """
     print('Hello! Let\'s explore some US bikeshare data!')
+    
     # get user input for city (chicago, new york city, washington). HINT: Use a while loop to handle invalid inputs
+    city = input("Enter city (chicago, new york city, washington): ")
+    while city not in CITY_DATA:
+        print("invalid city")
+        city = input("Enter city (chicago, new york city, washington): ")
 
 
     # get user input for month (all, january, february, ... , june)
+    month = input("Enter month (all, january, february, ... , june): ").lower()
+    while month not in MONTHS:
+        print("Invalid input")
+        month = input("Enter month (all, january, february, ... , june): ").lower()
 
 
     # get user input for day of week (all, monday, tuesday, ... sunday)
+    day = input("Enter day of week (all, monday, tuesday, ... sunday): ").lower()
+    while day not in DAYS:
+        print("Invalid input")
+        day = input("Enter day of week (all, monday, tuesday, ... sunday): ").lower()
 
 
     print('-'*40)
@@ -40,7 +56,28 @@ def load_data(city, month, day):
     Returns:
         df - Pandas DataFrame containing city data filtered by month and day
     """
+    
+    df = pd.read_csv(CITY_DATA[city])
+    df["Start Time"] = pd.to_datetime(df["Start Time"])
+    df["End Time"] = pd.to_datetime(df["End Time"])
+    
+    month_idx = MONTHS.index(month)
+    day_idx = DAYS.index(day)
+    
+    if month_idx == 0 and day_idx == 0:
+#         print(df.head())
+        return df
+    
+    if month_idx != 0:
+        mask = df["Start Time"].dt.month == month_idx
+        df = df[mask]
+        
+    if day_idx != 0:
+        mask = df["Start Time"].dt.dayofweek == day_idx
+        df = df[mask]
 
+
+#     print(df.head())
 
     return df
 
@@ -52,12 +89,18 @@ def time_stats(df):
     start_time = time.time()
 
     # display the most common month
+    month = df["Start Time"].dt.month_name().mode()
+    print("most common month: ", month[0])
 
 
     # display the most common day of week
+    day = df["Start Time"].dt.day_name().mode()
+    print("most common day: ", day[0])
 
 
     # display the most common start hour
+    hour = df["Start Time"].dt.hour.mode()
+    print("most common hour: ", hour[0])
 
 
     print("\nThis took %s seconds." % (time.time() - start_time))
