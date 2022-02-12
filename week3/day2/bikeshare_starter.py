@@ -21,13 +21,22 @@ def get_filters():
     print('Hello! Let\'s explore some US bikeshare data!')
     
     # get user input for city (chicago, new york city, washington). HINT: Use a while loop to handle invalid inputs
+    city = input("Enter city (chicago, new york city, washington): ").lower()
+    while city not in CITY_DATA:
+        print("invalid city")
+        city = input("Enter city (chicago, new york city, washington): ").lower()
     
-
     # get user input for month (all, january, february, ... , june)
-    
+    month = input("Enter month (all, january, february, ... , june): ").lower()
+    while month not in MONTHS:
+        print("invalid month")
+        month = input("Enter month (all, january, february, ... , june): ").lower()
     
     # get user input for day of week (all, monday, tuesday, ... sunday)
-    
+    day = input("Enter day of week (all, monday, tuesday, ... sunday): ").lower()
+    while day not in DAYS:
+        print("invalid day")
+        day = input("Enter day of week (all, monday, tuesday, ... sunday): ").lower()
 
     print('-'*40)
     return city, month, day
@@ -45,7 +54,22 @@ def load_data(city, month, day):
         df - Pandas DataFrame containing city data filtered by month and day
     """
     
+    df = pd.read_csv("data/" + CITY_DATA[city])
+    df["Start Time"] = pd.to_datetime(df["Start Time"])
+    df["End Time"] = pd.to_datetime(df["End Time"])
     
+    if month == "all" and day == "all":
+        return df
+    
+    if month != "all":
+        mask = df["Start Time"].dt.month_name() == month.title()
+        df = df[mask]
+
+    elif day != "all":
+        mask = df["Start Time"].dt.day_name() == day.title()
+        df = df[mask]
+    
+    print(df.sample(5))
     
     return df
 
@@ -57,13 +81,18 @@ def time_stats(df):
     start_time = time.time()
 
     # display the most common month
-    
+    common_month = df["Start Time"].dt.month_name().mode()[0]
+    print("the most common month: ", common_month)
     
 
     # display the most common day of week
+    common_day = df["Start Time"].dt.day_name().mode()[0]
+    print("the most common day of week: ", common_day)
     
 
     # display the most common start hour
+    common_hour = df["Start Time"].dt.hour.mode()[0]
+    print("the most common start hour: ", common_hour)
     
 
     print("\nThis took %s seconds." % (time.time() - start_time))
@@ -77,11 +106,17 @@ def station_stats(df):
     start_time = time.time()
 
     # display most commonly used start station
+    common = df["Start Station"].mode()[0]
+    print("the commonly used start station: ", common)
     
     # display most commonly used end station
+    common = df["End Station"].mode()[0]
+    print("the commonly used end station: ", common)
     
     # display most frequent combination of start station and end station trip
-    
+    common = df[["Start Station", "End Station"]].value_counts().index[0]
+    print("the most frequent combination of start station and end station trip: ", common)
+
 
     print("\nThis took %s seconds." % (time.time() - start_time))
     print('-'*40)
